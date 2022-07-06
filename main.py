@@ -5,13 +5,7 @@ def switch(char):
   return register.get(char)
 
 def command(char):
-  instruction = { 'add' : '00000' , 'sub' : '00001' , 'movI' : '00010' ,
-            'mov' : '00011' , 'ld' : '00100' , 'st' : '00101' ,
-            'mul' : '00110' , 'div' : '00111' , 'rs' : '01000' ,
-            'ls' : '01001' , 'xor' : '01010' , 'or' : '01011' ,
-            'and' : '01100' , 'not' : '01101' , 'cmp' : '01110' ,
-            'jmp' : '01111' , 'jlt' : '10000' , 'jgt' : '10001' ,
-            'je' : '10010' , 'hlt' : '10011' }
+  instruction={"add": "10000", "sub": "10001", "movI":"10010", "mov":"10011", "ld":"10100", "st":"10101", "mul":"10110", "div":"10111", "rs":"11000", "ls": "11001", "xor":"11010", "or":"11011", "and":"11100", "not":"11101", "cmp":"11110", "jmp":"11111", "jlt":"01100", "jgt":"01101", "je":"01111", "hlt":"01010"}
   return instruction.get(char)
 
 def immediate(string):
@@ -33,79 +27,137 @@ def immediate(string):
     return -1
 
 def hlt_error(texter, countI):
-  assert texter=="hlt", f"Error at line {countI}.Does not end with halt"
+  if texter!="hlt":
+    print(f"Error at line {countI}.Does not end with halt")
+    exit()
   return 0
 
 def checkError(texter, lisreg, lisreg2, lisVar, lislabel,countI):
   if(texter[0]=="add" or texter[0]=="sub" or texter[0]=="xor" or texter[0]=="and" or texter[0]=="mul" or texter[0]=="or"):
-    assert len(texter)==4, f"Error at line {countI}.Incorrect register declaration"
-    assert texter[3]!="FLAGS" and texter[2]!="FLAGS" and texter[1]!="FLAGS", f"Error at line {countI}.Misuse of flag register"
+    if len(texter)!=4:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
+    if (not(texter[3]!="FLAGS" and texter[2]!="FLAGS" and texter[1]!="FLAGS")):
+      print(f"Error at line {countI}.Misuse of flag register")
+      exit()
     b=0
     if (texter[1] in lisreg) and (texter[2] in lisreg) and (texter[3] in lisreg):
       b=1
-    assert b==1, f"Error at line {countI}.Incorret register declaration" 
+    if b!=1:
+      print(f"Error at line {countI}.Incorret register declaration")
+      exit()
   elif(texter[0]=="div" or texter[0]=="not" or texter[0]=="cmp"):
-    assert len(texter)==3, f"Error at line {countI}.Incorrect register declaration"
-    assert texter[1]!="FLAGS" and texter[2]!="FLAGS", f"Error at line {countI}.Misuse of flag register"
+    if len(texter)!=3:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
+    if (not(texter[1]!="FLAGS" and texter[2]!="FLAGS")):
+      print(f"Error at line {countI}.Misuse of flag register")
+      exit()
     b=0
     if (texter[1] in lisreg) and (texter[2] in lisreg):
       b=1
-    assert b==1, f"Error at line {countI}.Incorrect register declaration"
+    if b!=1:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
   elif(texter[0]=="mov"):
-    assert len(texter)==3, f"Error at line {countI}.Incorrect register declaration"
+    if len(texter)!=3:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
     if "$" in texter[2]:
-      assert texter[1]!="FLAGS", f"Error at line {countI}.Misuse of flag register"
+      if texter[1]=="FLAGS":
+        print(f"Error at line {countI}.Misuse of flag register")
+        exit()
       b=0
       if (texter[1] in lisreg):
         b=1
-      assert b==1, f"Error at line {countI}.Incorrect register declaration"
+      if b!=1:
+        print(f"Error at line {countI}.Incorrect register declaration")
+        exit()
       c=immediate(texter[2][1:len(texter[2])])
-      assert c!=-1, f"Error at line {countI}.Incorrect immediate declaration"
-      assert c!=-2, f"Error at line {countI}.Immediate out of range"
+      if c==-1:
+        print(f"Error at line {countI}.Incorrect immediate declaration")
+        exit()
+      if c==-2:
+        print(f"Error at line {countI}.Immediate out of range")
+        exit()
     else:
-      assert len(texter)==3, f"Error at line {countI}.Incorrect register declaration"
-      assert texter[1]!="FLAGS", f"Error at line {countI}.Misuse of flag register"
+      if len(texter)!=3:
+        print(f"Error at line {countI}.Incorrect register declaration")
+        exit()
+      if texter[2]=="FLAGS":
+        print(f"Error at line {countI}.Misuse of flag register")
+        exit()
       b=0
-      if (texter[1] in lisreg) and (texter[2] in lisreg2):
+      if (texter[2] in lisreg) and (texter[1] in lisreg2):
         b=1
-      assert b==1, f"Error at line {countI}.Incorrect register declaration"
+      if b!=1:
+        print(f"Error at line {countI}.Incorrect register declaration")
+        exit()
   elif(texter[0]=="ls" or texter[0]=="rs"):
-    assert len(texter)==3, f"Error at line {countI}.Incorrect register declaration"
-    assert texter[1]!="FLAGS", f"Error at line {countI}.Misuse of flag register"
+    if len(texter)!=3:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
+    if texter[1]=="FLAGS":
+      print(f"Error at line {countI}.Misuse of flag register")
+      exit()
     b=0
     if (texter[1] in lisreg):
       b=1
-    assert b==1, f"Error at line {countI}.Incorrect register declaration"
+    if b!=1:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
     c=immediate(texter[2][1:len(texter[2])])
-    assert c!=-1, f"Error at line {countI}.Incorrect immediate declaration"
-    assert c!=-2, f"Error at line {countI}.Immediate out of range"
+    if c==-1:
+      print(f"Error at line {countI}.Incorrect immediate declaration")
+      exit()
+    if c==-2:
+      print(f"Error at line {countI}.Immediate out of range")
+      exit()
   elif (texter[0]=="ld" or texter[0]=="st"):
-    assert len(texter)==3, f"Error at line {countI}.Incorrect register declaration"
-    assert texter[1]!="FLAGS", f"Error at line {countI}.Misuse of flag register"
+    if len(texter)!=3:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
+    if texter[1]=="FLAGS":
+      print(f"Error at line {countI}.Misuse of flag register")
+      exit()
     if(texter[1] in lisreg):
       b=1
-    assert b==1, f"Error at line {countI}.Incorrect register declaration"
+    if b!=1:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
     c=0
     if(texter[2] in lisVar):
       c=1
-    assert c==1, f"Error at line {countI}.Variable not within scope"
+    if c!=1:
+      print(f"Error at line {countI}.Variable not within scope")
+      exit()
   elif (texter[0]=="jmp" or texter[0]=="je" or texter[0]=="jgt" or texter[0]=="jlt"):
-    assert len(texter)==2, f"Error at line {countI}.Incorrect register declaration"
+    if len(texter)!=2:
+      print(f"Error at line {countI}.Incorrect register declaration")
+      exit()
     c=0
     if(texter[1] in lislabel):
       c=1
-    assert c==1, f"Error at line {countI}.Label not within scope"
+    if c!=1:
+      print(f"Error at line {countI}.Label not within scope")
+      exit()
   elif(texter[0]=="var"):
     b=0
-    assert b==1, f"Error at line {countI}.Variable declared in the middle of the code"
+    if b!=1:
+      print(f"Error at line {countI}.Variable declared in the middle of the code")
+      exit()
   elif(texter[0][0:len(texter[0])-1] in lislabel):
     b=1
   elif(texter[0]=="hlt"):
     b=0
-    assert b==1, f"Error at line {countI}.Hlt function in the middle of the code"
+    if b!=1:
+      print(f"Error at line {countI}.Hlt function in the middle of the code")
+      exit()
   else:
     b=0
-    assert b==1, f"Error at line {countI}.Incorrect instruction declaration"
+    if b!=1:
+      print(f"Error at line {countI}.Incorrect instruction declaration")
+      exit()
 
 def printData(texter, lislabel, lisVar, lislabelpos, lisVarpos, i,countInstr):
   data=""
@@ -155,6 +207,9 @@ for i in texter:
   if(i.strip()!=""):
     t2.append(i)
 texter=t2
+if(len((texter))>256):
+  print("Memory Limit exceeded")
+  exit()
 lisreg=["R0", "R1", "R2", "R3", "R4", "R5", "R6"]
 lisreg2=["R0", "R1", "R2", "R3", "R4", "R5", "R6", "FLAGS"]
 liscomm=[]
@@ -179,8 +234,11 @@ for i in range(len(liscomm)):
     break
   countI+=1
   b=checkVar(liscomm[i][0])
-  assert b==1, f"Error at line {countI}.Variable not declared properly"
-  assert (len(liscomm[i]))==2, f"Error at line {countI}.Variable not declared properly"
+  if b!=1:
+    print(f"Error at line {countI}.Variable not declared properly")
+    exit()
+  if (len(liscomm[i]))!=2:
+    print(f"Error at line {countI}.Variable not declared properly")
   lisVar.append(liscomm[i][1])
   lisVarpos.append(i-indexVar)
   countVar+=1
