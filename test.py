@@ -6,4 +6,5 @@ def DecToBin(n,m=16):
     L.reverse()
     return (("0"*(m-len(L))+"".join(L))[-m:])
 
-print(DecToBin(1))
+s = "abcd"
+print(min(3,4))

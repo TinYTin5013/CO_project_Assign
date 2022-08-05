@@ -1,3 +1,4 @@
+from sys import stdin
 opcodes = {"10000": "RRR", "10001": "RRR", "10010": "RI", "10011": "RR", "10100": "RM", "10101": "RM", "10110": "RRR",
            "10111": "RR", "11000": "RI", "11001": "RI", "11010": "RRR", "11011": "RRR", "11100": "RRR", "11101": "RR",
            "11110":"RR","11111":"M","01100":"M","01101":"M","01111":"M","01010":"H"}
@@ -24,13 +25,14 @@ def getReg(s):
 def printRegisters(prog):
     return (DecToBin(prog,8)+" "+registers["R0"]+" "+registers["R1"]+" "+registers["R2"]+" "+registers["R3"]+" "+registers["R4"]+" "+registers["R5"]+" "+registers["R6"]+" "+registers["FLAGS"])
 
-f = open("AssemblerOutput.txt","r")
-instructions1 = f.readlines()
-instructions=[]
-for i in instructions1:
-    if i.strip()!="":
-        instructions.append(i.strip())
-f.close()
+#f = open("AssemblerOutput.txt","r")
+instructions = []
+for line in stdin:
+    if line.strip()!="":
+        instructions.append(line.strip())
+#instructions = f.readlines()
+#instructions = [i.strip() for i in instructions]
+#f.close()
 memory = [i.strip() for i in instructions]
 memory = memory + ["0"*16 for i in range(len(instructions),256)]
 
@@ -43,7 +45,7 @@ while(opcodes.get(instructions[pc][:5])!="H"):
     f=0
     #print(instructions[pc])
     tinst = instructions[pc][:5]
-    print("NEW INSTRUCTION, type = "+opcodes[tinst])
+    #print("NEW INSTRUCTION, type = "+opcodes[tinst])
     if(opcodes.get(tinst)=="RRR"):
         r2 = getReg(instructions[pc][7:10])
         r3 = getReg(instructions[pc][10:13])
@@ -53,15 +55,15 @@ while(opcodes.get(instructions[pc][:5])!="H"):
 
             if(s>=2**16):
                 registers["FLAGS"] = registers["FLAGS"][:-4]+"1"+registers["FLAGS"][-3:]
-                print("OVERFLOW ERROR Program counter address = "+str(pc))
+                #print("OVERFLOW ERROR Program counter address = "+str(pc))
                 f=2
             registers[r1]= DecToBin(s)
-            print(r1 + "= " + r2 + " + " + r3 + " = " + registers[r1])
+            #print(r1 + "= " + r2 + " + " + r3 + " = " + registers[r1])
         elif (tinst == "10001"):
             s = binaryToDec(registers[r2]) - binaryToDec(registers[r3])
             if (s <0):
                 registers["FLAGS"] = registers["FLAGS"][:-4] + "1" + registers["FLAGS"][-3:]
-                print("OVERFLOW ERROR\n Program counter address = " + str(pc))
+                #print("OVERFLOW ERROR\n Program counter address = " + str(pc))
                 f=2
                 s=0
             registers[r1] = DecToBin(s)
@@ -69,7 +71,7 @@ while(opcodes.get(instructions[pc][:5])!="H"):
             s = binaryToDec(registers[r2]) * binaryToDec(registers[r3])
             if (s >= 2 ** 16):
                 registers["FLAGS"] = registers["FLAGS"][:-4] + "1" + registers["FLAGS"][-3:]
-                print("OVERFLOW ERROR\n Program counter address = " + str(pc))
+                #print("OVERFLOW ERROR\n Program counter address = " + str(pc))
                 f=2
             registers[r1] = DecToBin(s)
         elif (tinst == "11010"):
@@ -87,13 +89,13 @@ while(opcodes.get(instructions[pc][:5])!="H"):
         if(tinst=="10011"):
             registers[r2] =registers[r1]
         elif(tinst=="10111"):
-            try:
+            #try:
                 n1 = binaryToDec(registers[r1])
                 n2 = binaryToDec(registers[r2])
                 registers["R0"] = DecToBin(n1 // n2)
                 registers["R1"] = DecToBin(n1 % n2)
-            except:
-                print("ZERO Division error in register "+r2+" PC = "+str(pc))
+            #except:
+                #print("ZERO Division error in register "+r2+" PC = "+str(pc))
         elif(tinst =="11101"):
             registers[r2] = "".join([chr(ord("0")+(ord("1")-ord(i))) for i in registers[r1]])
         elif(tinst == "11110"):
@@ -101,31 +103,30 @@ while(opcodes.get(instructions[pc][:5])!="H"):
             n1 = binaryToDec((registers[r1]))
             n2 = binaryToDec((registers[r2]))
             if(n1>n2):
-                registers["FLAGS"] = "0"*13 + "010"
+                registers["FLAGS"] = registers["FLAGS"][:-3] + "010"
             elif(n1==n2):
-                registers["FLAGS"] = "0"*13 + "001"
-                print("SET FLAG REGISTER at PC = "+str(pc)+" to "+str(registers["FLAGS"]))
+                registers["FLAGS"] = registers["FLAGS"][:-3] + "001"
             elif(n1<n2):
-                registers["FLAGS"] = "0"*13 + "100"
+                registers["FLAGS"] = registers["FLAGS"][:-3] + "100"
     elif(opcodes.get(tinst)=="RI"):
         r1 = getReg(instructions[pc][5:8])
         I = binaryToDec(instructions[pc][8:16])
         if(tinst=="10010"):
             registers[r1]= DecToBin(I)
-            print("Set "+r1 +" to "+registers[r1])
+            #print("Set "+r1 +" to "+registers[r1])
         elif(tinst=="11000"):
-            registers[r1] = "0"*I+registers[r1][:-I]
+            registers[r1] = "0"*(min(16,I))+registers[r1][:-I]
         elif(tinst=="11001"):
-            registers[r1] = registers[I:]+"0"*I
+            registers[r1] = registers[r1][I:]+"0"*min(16,I)
     elif(opcodes.get(tinst)=="RM"):
         r1 = getReg(instructions[pc][5:8])
         mem = instructions[pc][8:16]
         if(tinst=="10100"):
             registers[r1] = memory[binaryToDec(mem)]
-            print("Loaded "+ mem + "= "+ memory[binaryToDec(mem)] +" into "+r1)
+            #print("Loaded "+ mem + "= "+ memory[binaryToDec(mem)] +" into "+r1)
         if(tinst=="10101"):
             memory[binaryToDec(mem)]=registers[r1]
-            print("Stored "+ r1+"= "+registers[r1]  +"into "+ mem + "= " + memory[binaryToDec(mem)])
+            #print("Stored "+ r1+"= "+registers[r1]  +"into "+ mem + "= " + memory[binaryToDec(mem)])
     elif(opcodes.get(tinst)=="M"):
         mem = instructions[pc][8:16]
         if(tinst=="11111"):
@@ -141,9 +142,14 @@ while(opcodes.get(instructions[pc][:5])!="H"):
                 pc = binaryToDec(mem)-1
     if (f == 0):
         registers["FLAGS"] = "0" * 16
-        #registers["FLAGS"] = registers["FLAGS"][:-4] + "1" + registers["FLAGS"][-3:]
+    elif(f!=1):
+        registers["FLAGS"] = registers["FLAGS"][:-4] + "1" + registers["FLAGS"][-3:]
     pc = pc + 1
-    file1.write(printRegisters(tpc)+"\n")
-file1.write(printRegisters(pc)+"\n")
-file1.write("\n".join(memory)+"\n")
-file1.close()
+    #file1.write(printRegisters(tpc)+"\n")
+    print(printRegisters(tpc))
+registers["FLAGS"]= "0"*16
+#file1.write(printRegisters(pc)+"\n")
+print(printRegisters(pc))
+#file1.write("\n".join(memory)+"\n")
+print("\n".join(memory))
+#file1.close()
