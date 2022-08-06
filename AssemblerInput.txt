@@ -1,11 +1,9 @@
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
-sub R0 R1 R2
+movf R1 $1.5
+movf R2 $1.25
+movf R3 $2.125
+movf R4 $6.5
+movf R5 $4.5
+movf R6 $252.0
+addf R1 R2 R3
+subf R4 R5 R6
 hlt
